@@ -33,9 +33,9 @@ docker compose up -d --build
 
 Lệnh trên sẽ tạo các container:
 
-- `fit4110-db-lab05` (PostgreSQL)
-- `fit4110-ai-lab05` (AI service mẫu chạy port 9000)
-- `fit4110-api-lab05` (API FastAPI trên port 8000)
+- `fit4110-db-lab05` (PostgreSQL database service chạy trên port 5432)
+- `fit4110-worker-lab05` (Notification worker service chạy trên port 9000)
+- `fit4110-api-lab05` (Notification API service chạy trên port 8000)
 
 Theo dõi log:
 
@@ -46,20 +46,24 @@ docker compose logs -f
 Sau vài giây, kiểm tra health của mỗi service:
 
 ```bash
-# API
+# API (Kiểm tra xem API hoạt động và DB đã connected chưa)
 curl http://localhost:8000/health
 
-# AI service
+# Notification Worker
 curl http://localhost:9000/health
 
 # DB readiness
-docker exec -it fit4110-db-lab05 pg_isready -U $POSTGRES_USER
+docker exec -it fit4110-db-lab05 pg_isready -U lab05
 ```
 
-Bạn cũng có thể truy cập endpoint `/predict` của AI service để xem kết quả mẫu:
+Bạn có thể gửi thử thông báo khẩn cấp đến API để kiểm tra luồng hoạt động end-to-end:
 
 ```bash
-curl -X POST http://localhost:9000/predict
+# Gửi alert đến API (Sử dụng PowerShell hoặc curl)
+curl -X POST http://localhost:8000/api/v1/alerts \
+  -H "Authorization: Bearer local-dev-token" \
+  -H "Content-Type: application/json" \
+  -d '{"location": "Building B7", "type": "fire_alarm", "details": "Test alert via terminal"}'
 ```
 
 ---
